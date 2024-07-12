@@ -1,22 +1,35 @@
 #!/usr/bin/python3
 """
-Contains the top_ten function
+This module contains the function top_ten.
 """
-
 import requests
+from sys import argv
 
 
 def top_ten(subreddit):
-    """prints the titles of the top ten hot posts for a given subreddit"""
-    if subreddit is None or type(subreddit) is not str:
-        print(None)
-    r = requests.get('http://www.reddit.com/r/{}/hot.json'.format(subreddit),
-                     headers={'User-Agent': 'Python/requests:APIproject:\
-                     v1.0.0 (by /u/aaorrico23)'},
-                     params={'limit': 10}).json()
-    posts = r.get('data', {}).get('children', None)
-    if posts is None or (len(posts) > 0 and posts[0].get('kind') != 't3'):
-        print(None)
+    """
+    Returns the top ten posts for a given subreddit.
+    """
+    user = {'User-Agent': 'Mozilla/5.0'}
+    url = 'https://www.reddit.com/r/{}/hot/.json?limit=10'.format(subreddit)
+
+    try:
+        response = requests.get(url, headers=user, allow_redirects=False)
+        response.raise_for_status()
+        data = response.json()
+
+        if 'data' in data and 'children' in data['data']:
+            for post in data['data']['children']:
+                print(post['data']['title'])
+        print("OK")
+    except requests.exceptions.RequestException:
+        print("None")
+    except ValueError:
+        print("None")
+
+
+if __name__ == "__main__":
+    if len(argv) > 1:
+        top_ten(argv[1])
     else:
-        for post in posts:
-            print(post.get('data', {}).get('title', None))
+        print("Usage: ./script.py <subreddit>")
